@@ -1,32 +1,30 @@
 """
-We will model a simple weather system and try to predict the temperature on each day given 
-the following information.
+Vamos a modelar un sistema climático simple e intentar predecir la temperatura de cada día, teniendo en cuenta la siguiente información:
 
-1. Cold days are encoded by a 0 and hot days are encoded by a 1.
-2. The first day in our sequence has an 80% chance of being cold.
-3. A cold day has a 30% chance of being followed by a hot day.
-4. A hot day has a 20% chance of being followed by a cold day.
-5. On each day the temperature is normally distributed with mean and standard deviation 0 and 5 on a cold day and 
-   mean and standard deviation 15 and 10 on a hot day.
+1. Los días fríos se codifican con un 0 y los días calurosos se codifican con un 1.
+2. El primer día de nuestra secuencia tiene un 80% de probabilidad de ser frío.
+3. Un día frío tiene un 30% de probabilidad de ser seguido por un día caluroso.
+4. Un día caluroso tiene un 20% de probabilidad de ser seguido por un día frío.
+5. En cada día, la temperatura sigue una distribución normal con una media y desviación estándar de 0 y 5 en un día frío, y una media y desviación estándar de 15 y 10 en un día caluroso.
 """
 
 import tensorflow_probability as tfp  # We are using a different module from tensorflow this time
 import tensorflow as tf
 
-#In this example, on a hot day the average temperature is 15 and ranges from 5 to 25.
-#To model this in TensorFlow we will do the following.
+#En este ejemplo, en un día caluroso la temperatura promedio es de 15 y varía entre 5 y 25.
+#Para modelar esto en TensorFlow, haremos lo siguiente.
 tfd = tfp.distributions  # making a shortcut for later on
-initial_distribution = tfd.Categorical(probs=[0.2, 0.8])  # Refer to point 2 above
+initial_distribution = tfd.Categorical(probs=[0.2, 0.8])  # Haciendo referencia al punto 2 anterior
 transition_distribution = tfd.Categorical(probs=[[0.7, 0.3],  #Si el dia es cold, 70% chance de que siga cold.
                                                  [0.2, 0.8]]) #Si el dia es hot, 80% chance de que siga hot.
-                                                              #refer to points 3 and 4 above
-observation_distribution = tfd.Normal(loc=[0., 15.], scale=[5., 10.])  # refer to point 5 above
+                                                              # Haciendo referencia a los puntos 3 y 4 
+observation_distribution = tfd.Normal(loc=[0., 15.], scale=[5., 10.])  # Haciendo referencia al punto 5
 # en dia hot, es 0 y 15 en cold day. La standard deviation es 5 en cold day, y 10 en hot day.
 # the loc argument represents the mean and the scale is the standard devitation
 
 
-#We've now created distribution variables to model our 
-#system and it's time to create the hidden markov model.
+#Ahora hemos creado variables de distribución para modelar nuestro
+#sistema y es hora de crear el modelo oculto de Markov.
 model = tfd.HiddenMarkovModel(
     initial_distribution=initial_distribution,
     transition_distribution=transition_distribution,
@@ -35,13 +33,14 @@ model = tfd.HiddenMarkovModel(
 #steps es la ctidad de dias que queremos predecir, en este caso una semana.
 
 
-#To get the expected temperatures on each day we can do the following.
+#Para obtener las temperaturas esperadas en cada día, podemos hacer lo siguiente.
 mean = model.mean()
 
-# due to the way TensorFlow works on a lower level we need to evaluate part of the graph
-# from within a session to see the value of this tensor
+# Debido a la forma en que TensorFlow funciona a un nivel inferior, necesitamos evaluar parte del gráfico
+# desde dentro de una sesión para ver el valor de este tensor.
 
-# in the new version of tensorflow we need to use tf.compat.v1.Session() rather than just tf.Session()
+# En la nueva versión de TensorFlow, debemos utilizar tf.compat.v1.Session() 
+# en lugar de simplemente tf.Session() para crear una sesión.
 with tf.compat.v1.Session() as sess:  
   print(mean.numpy())   #obtengo:[11.999999 10.500001  9.75      9.375     9.1875    9.09375   9.046875]
                         #que son las expected temperatures on each day en grados C.
