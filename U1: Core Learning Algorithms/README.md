@@ -10,6 +10,7 @@ Una vez entrenado vamos poder ingresarle data y obtener que tipo de flor es, con
 ## TITANIC 
 Dado la data obtenida de los pasajeros del Titanic segun googleAPIs, vamos a entrenar un modelo para ser capaz de predecir
 que personas tiene la mayor chance de supervivencia.
+
 Utilizamos un modelo de Machine Learning llamado Linear Classifier.
 
 
